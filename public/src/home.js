@@ -1,103 +1,85 @@
-function totalBooksCount(books) {
-  return books.length;
+//Returns the number of books in the array
+function getTotalBooksCount(books) {
+  const totalBooks = books.map((book) => books); 
+  return totalBooks.length
 }
 
-function totalAccountsCount(accounts) {
-  return accounts.length;
+//Returns the number of accounts in the array
+function getTotalAccountsCount(accounts) {
+  const list = accounts.reduce((account) => {
+  account = accounts.map((account) => account);
+  return account.length;
+  }, 0);
+  return list; 
 }
 
-function booksBorrowedCount(books) {
-  let total = 0;
-  books.forEach((book) => {
-    if (!book.borrows[0].returned) {
-      total++;
-    }
-  });
-
-  return total;
+//Returns the number of borrowed books in the array
+function getBooksBorrowedCount(books) {
+  const borrowedBooks = books.filter((book) => book.borrows[0].returned === false);
+  return borrowedBooks.length;
 }
 
+//Helper function returns top five results
+function _topFive(array) {
+  let result = array.sort((countA, countB) => (countA.count < countB.count ? 1: -1
+    )).slice(0, 5);
+  return result;
+}
+
+//Returns the top five most common Genres
 function getMostCommonGenres(books) {
-  // creates new array of most common genres with reduce()
-  const result = books.reduce((accum, book) => {
-    // gets the genre of current book
-    const genre = book.genre;
-
-    // gets the object 
-    const genreInfo = accum.find((element) => element.name === genre);
-
-    // if an object was not found, create a new one and push it into accum
-    if (!genreInfo) {
-      const newGenreInfo = {
-        name: genre,
-        count: 1,
-      };
-      accum.push(newGenreInfo);
+  const commonGenres = [];
+  for (let book of books) {
+    const genre = commonGenres.find(
+      (currentGenre) => currentGenre.name === book.genre);
+    if (genre) {
+      genre.count++;
     } else {
-      // if object was found, then add 1 to count
-      genreInfo.count++;
-    }
-
-    return accum;
-  }, []);
-
-  // sorts the array by count from greatest to least
-  result.sort((genreA, genreB) => genreB.count - genreA.count);
-
-  // limits array to 5
-  result.splice(5);
-
-  return result;
+      commonGenres.push({ name: book.genre, count: 1})
+  }
+}
+  return _topFive(commonGenres);
 }
 
+//Returns the top five most popular Books
 function getMostPopularBooks(books) {
-  // creates an new array of most popular
-  const result = books.map((book) => {
-    const popularityInfo = {
-      name: book.title,
-      count: book.borrows.length,
-    };
+  const topBooks = [];
+    for (let book of books) {
+      const popular = book.borrows.length
+      const bestBooks = topBooks.find(
+        (popularBook) => popularBook.name === book
+      );
+      if (bestBooks) {
+        bestBooks.count++;
+      } else {
+        topBooks.push({ name: book.title, count: popular});
+      }
+    }
+  return _topFive(topBooks);
+}         
 
-    return popularityInfo;
-  });
-
-  // sorts the new array by count: g to l
-  result.sort((titleA, titleB) => titleB.count - titleA.count);
-
-  // limits to 5 elements
-  result.splice(5);
-
-  return result;
-}
-
+//Returns the top five most popular Authors
 function getMostPopularAuthors(books, authors) {
-  // creates array of authors by popularity
-  const result = authors.map((author) => {
-    const fullName = `${author.name.first} ${author.name.last}`;
-    const booksByAuthor = getBooksByAuthorId(books, author.id);
-    const totalBorrows = booksByAuthor.reduce((accum, book) => accum + book.borrows.length, 0);
-    const newAuthorInfo = {
-      name: fullName,
-      count: totalBorrows,
-    };
-
-    return newAuthorInfo;
-  });
-
-  // sorts the new array by count: g to l
-  result.sort((authorA, authorB) => authorB.count - authorA.count);
-
-  // limits array to 5
-  result.splice(5);
-
-  return result;
+  const popAuthors = [];
+    for (let author of authors) {
+      const authorName = `${author.name.first} ${author.name.last}`;
+      let count = 0;
+      for (let book of books) {
+        if (author.id === book.authorId) {
+          count += book.borrows.length;
+        }
+      }
+      const authorList = { name: authorName, count: count };
+      popAuthors.push(authorList);
+    }
+  return _topFive(popAuthors);
 }
 
 module.exports = {
-  totalBooksCount,
-  totalAccountsCount,
-  booksBorrowedCount,
+  getTotalBooksCount,
+  getTotalAccountsCount,
+  getBooksBorrowedCount,
   getMostCommonGenres,
   getMostPopularBooks,
   getMostPopularAuthors,
-};
+}
